@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Urpaq AI-помощник</title>
+  
+
+  <style>
+    :root {
+      --bg-primary: #25292f;
+      --bg-secondary: rgba(54, 58, 64, 0.95);
+      --bg-header: rgba(33, 38, 45, 0.95);
+      --bg-input: #21262d;
+      --bg-bot-msg: #21262d;
+      --bg-quick-btn: #3e5f73;
+      --text-primary: #fffff0;
+      --text-accent: #64baff;
+      --border-color: rgba(100, 186, 255, 0.4);
+      --border-subtle: #30363d;
+      --overlay: rgba(0, 0, 0, 0.65);
+      --bg-text-gradient: linear-gradient(90deg, #b5e3ff, #d8f3ff, #a6e3ff);
+      --bg-text-opacity: 0.15;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f0f4f8;
+      --bg-secondary: rgba(255, 255, 255, 0.95);
+      --bg-header: rgba(240, 243, 247, 0.95);
+      --bg-input: #ffffff;
+      --bg-bot-msg: #e8f0fe;
+      --bg-quick-btn: #64baff;
+      --text-primary: #1a1a1a;
+      --text-accent: #0066cc;
+      --border-color: rgba(100, 186, 255, 0.6);
+      --border-subtle: #d0d7de;
+      --overlay: rgba(255, 255, 255, 0.3);
+      --bg-text-gradient: linear-gradient(90deg, #2196F3, #1976D2, #0D47A1);
+      --bg-text-opacity: 0.25;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+      transition: background 0.3s ease, color 0.3s ease;
+      padding-top: 70px;
+    }
+
+    .top-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-header);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .top-panel-logo {
+      height: 45px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .top-panel-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .top-theme-toggle {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--text-accent);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .top-theme-toggle:hover {
+      background: var(--text-accent);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .top-lang-select {
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--text-accent);
+      border-radius: 8px;
+      padding: 6px 12px;
+      outline: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .top-lang-select:hover {
+      border-color: var(--text-accent);
+      box-shadow: 0 0 8px rgba(100, 186, 255, 0.3);
+    }
+
+    .bg-text {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 160px;
+      font-weight: 900;
+      white-space: nowrap;
+      user-select: none;
+      z-index: 0;
+      font-family: "Cinzel", serif;
+      background: var(--bg-text-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: var(--bg-text-opacity);
+      text-shadow: 0 0 30px rgba(100, 186, 255, 0.4);
+      letter-spacing: 4px;
+      transition: opacity 0.4s ease;
+    }
+
+    body.expanded .bg-text {
+      opacity: 0;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--overlay);
+      z-index: 0;
+    }
+
+    .about-section {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin-bottom: 25px;
+      max-width: 800px;
+      padding: 20px 30px;
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(10px);
+      opacity: 1;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    body.expanded .about-section {
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+    }
+
+    .about-section h2 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-accent);
+      margin-bottom: 16px;
+      text-shadow: 0 0 15px rgba(100, 186, 255, 0.2);
+    }
+
+    .about-section p {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-primary);
+      opacity: 0.95;
+      text-align: justify;
+    }
+
+    .ai-description {
+      top: auto;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 600px;
+      padding: 0 20px;
+      opacity: 1;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    body.expanded .ai-description {
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+    }
+
+    .ai-description h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-accent);
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(100, 186, 255, 0.3);
+    }
+
+    .ai-description p {
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      opacity: 0.9;
+    }
+
+    .ai-description .highlight {
+      color: var(--text-accent);
+      font-weight: 600;
+    }
+
+    .assistant {
+      position: fixed;
+      z-index: 1;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 420px;
+      max-width: 90%;
+      height: 500px;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(6px);
+      box-shadow:
+        0 0 8px rgba(100, 186, 255, 0.4),
+        0 0 20px rgba(100, 186, 255, 0.25),
+        0 0 35px rgba(100, 186, 255, 0.15);
+      animation: neonPulse 3s infinite alternate ease-in-out;
+      overflow: hidden;
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .assistant.collapsed {
+      position: sticky;
+      top: 600px;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      max-width: 85%;
+      height: 60px;
+      border-radius: 30px;
+      cursor: pointer;
+    }
+
+    .assistant.collapsed:hover {
+      box-shadow:
+        0 0 12px rgba(100, 186, 255, 0.6),
+        0 0 25px rgba(100, 186, 255, 0.4);
+    }
+
+
+    .qwerty{
+      position: fixed;
+      width: 0px;
+      height: 400px;
+      left:  850px;
+        }
+
+    @keyframes neonPulse {
+      from { box-shadow: 0 0 8px rgba(100, 186, 255, 0.4); }
+      to { box-shadow: 0 0 20px rgba(100, 186, 255, 0.7); }
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-header);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      opacity: 1;
+      max-height: 50px;
+      transition: all 0.4s ease;
+    }
+
+    .assistant.collapsed .header {
+      opacity: 0;
+      max-height: 0;
+      padding: 0 14px;
+      overflow: hidden;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      margin: 0;
+      color: var(--text-accent);
+      font-weight: 600;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .back-btn {
+      background: transparent;
+      color: var(--text-accent);
+      border: 1px solid var(--text-accent);
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .back-btn:hover {
+      background: var(--text-accent);
+      color: white;
+      transform: translateX(-2px);
+    }
+
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      max-height: 350px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 186, 255, 0.3) transparent;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .assistant.collapsed .chat {
+      opacity: 0;
+      max-height: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .chat::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat::-webkit-scrollbar-thumb {
+      background: rgba(100, 186, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    .chat::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 186, 255, 0.5);
+    }
+
+    .msg {
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin: 6px 0;
+      line-height: 1.5em;
+      word-break: break-word;
+      position: relative;
+      max-width: 90%;
+      white-space: pre-line;
+    }
+
+    .user {
+      background: #64baff;
+      align-self: flex-end;
+      color: white;
+      border-radius: 14px 14px 0 14px;
+      margin-left: auto;
+    }
+
+    .bot {
+      background: var(--bg-bot-msg);
+      align-self: flex-start;
+      border-radius: 14px 14px 14px 0;
+      padding-right: 35px;
+    }
+
+    .bot strong {
+      color: var(--text-accent);
+      font-weight: 600;
+    }
+
+    .speaker-icon {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      user-select: none;
+    }
+
+    .speaker-icon:hover {
+      opacity: 1;
+    }
+
+    .speaker-icon.speaking {
+      animation: pulse 0.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .input-area {
+      display: flex;
+      gap: 6px;
+      padding: 10px 12px 14px;
+      border-top: 1px solid rgba(100, 186, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .assistant.collapsed .input-area {
+      border-top: none;
+      padding: 10px 20px;
+    }
+
+    .model{
+      left: auto;
+      top: auto;
+      z-index: 6;
+    }
+
+    input {
+      flex: 1;
+      border: none;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+
+    .assistant.collapsed input {
+      background: transparent;
+      font-size: 15px;
+      padding: 10px 16px;
+    }
+
+    input::placeholder {
+      color: var(--text-primary);
+      opacity: 0.5;
+    }
+
+    button {
+      background: #64baff;
+      border: none;
+      color: white;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    button:hover {
+      background: #4a9eff;
+    }
+
+    .assistant.collapsed button {
+      opacity: 0;
+      width: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    /* Quick buttons - стили как во втором коде */
+    .quick-buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 0 12px;
+      opacity: 1;
+      max-height: 100px;
+      transition: all 0.3s ease;
+    }
+
+    .assistant.collapsed .quick-buttons {
+      opacity: 0;
+      max-height: 0;
+      margin-bottom: 0;
+      overflow: hidden;
+    }
+
+    .circle-btn {
+      min-width: 110px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: var(--bg-quick-btn);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+      text-align: center;
+      line-height: 1.2em;
+      font-size: 13px;
+    }
+
+    .circle-btn:hover {
+      background: #64baff;
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(100, 186, 255, 0.5);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      opacity: 0.7;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .assistant:not(.collapsed) .search-icon {
+      opacity: 0;
+    }
+
+    @media (max-width: 480px) {
+      .bg-text {
+        font-size: 80px;
+      }
+
+      .assistant {
+        width: 95%;
+      }
+
+      .assistant.collapsed {
+        width: 90%;
+      }
+
+      .top-panel {
+        padding: 10px 16px;
+      }
+
+      .top-panel-logo {
+        height: 35px;
+      }
+
+      .top-theme-toggle,
+      .top-lang-select {
+        padding: 4px 8px;
+        font-size: 13px;
+      }
+
+      .about-section {
+        padding: 15px 20px;
+        max-width: 95%;
+      }
+
+      .about-section h2 {
+        font-size: 20px;
+      }
+
+      .about-section p {
+        font-size: 13px;
+      }
+      
+      .ai-description h2 {
+        font-size: 20px;
+      }
+
+      .ai-description p {
+        font-size: 14px;
+      }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+</head>
+
+<body data-theme="light">
+  <div class="top-panel">
+    <img src="https://digitalurpaq.edu.kz/wp-content/uploads/2024/05/logo.svg" alt="Digital Urpaq" class="top-panel-logo" />
+    <div class="top-panel-controls">
+      <button class="top-theme-toggle" id="topThemeToggle" title="Переключить тему">☀️</button>
+      <select class="top-lang-select" id="topLangSelect">
+        <option value="ru">Русский</option>
+        <option value="kk">Қазақша</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="bg-text">Digital Urpaq</div>
+
+  <div class="about-section" id="aboutSection">
+    <h2>О нашем Дворце школьников</h2>
+    <p>Дворец школьников занимает авангардную позицию в развитии новых, наиболее востребованных направлений ІТ-технологий. Приоритетным направлением является развитие проектно-исследовательской деятельности и научно-технического творчества, соответствующее наиболее перспективным направлениям развития современной науки и техники. На базе Дворца школьников будет функционировать IT-центр, который станет местом интеллектуального развития и досуга детей и молодежи.</p>
+  </div>
+
+  <div class="ai-description" id="aiDescription">
+    <h2>🤖 AI-Помощник</h2>
+    <p>Здесь ответят на все вопросы. <span class="highlight">Спросите!</span></p>
+  </div>
+
+  <div class="assistant collapsed">
+    <div class="header">
+      <h1>Digital Urpaq AI</h1>
+      <div class="header-controls">
+        <button class="back-btn" id="backBtn" title="Вернуться назад">← Назад</button>
+      </div>
+    </div>
+    
+    <div class="chat" id="chat"></div>
+    <div class="quick-buttons" id="quickBtns"></div>
+
+    <div class="input-area">
+      <input id="userInput" type="text" placeholder="Спросите что-нибудь..." autocomplete="off" />
+      <span class="search-icon">🔍</span>
+      <button id="sendBtn">Отправить</button>
+    </div>
+  </div>
+
+  <!-- ===== ROBOT ASSISTANT START ===== -->
+   <div class="qwerty">
+  
+ <img src="tip.glb.gif" alt="" >
+</div>
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.155.0/build/three.module.js';
+    import { GLTFLoader } from 'https://unpkg.com/three@0.155.0/examples/jsm/loaders/GLTFLoader.js';
+
+    // ⚙️ Укажи свой путь к файлу .glb (можно просто рядом положить)
+    const MODEL_URL = 'marin_the_robot_shark_low_poly.glb'; 
+
+    // Основная сцена
+    const container = document.getElementById('robot-container');
+    const canvas = document.getElementById('robot-canvas');
+    const scene = new THREE.Scene();
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas, 
+      antialias: true, 
+      alpha: true,
+      preserveDrawingBuffer: true // Сохраняем буфер рендеринга
+    });
+    
+    // Устанавливаем размер с учетом плотности пикселей
+    const setSize = () => {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      const pixelRatio = Math.min(window.devicePixelRatio, 2); // Ограничиваем для производительности
+      
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(pixelRatio);
+      
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    };
+
+    setSize();
+    scene.background = null;
+
+    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+    camera.position.set(0, 1, 3);
+
+    // Улучшенное освещение
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 7);
+    scene.add(directionalLight);
+
+    let mixer = null;
+    let model = null;
+    let isModelLoaded = false;
+    
+    const loader = new GLTFLoader();
+    loader.load(MODEL_URL, 
+      (gltf) => {
+        model = gltf.scene;
+        model.scale.set(0.8, 0.8, 0.8);
+        model.position.y = -0.5;
+        model.rotation.y = Math.PI / 6; // Легкий поворот для лучшего обзора
+        
+        // Настройка материалов для лучшего отображения
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.material.transparent = true;
+            child.material.opacity = 1;
+          }
+        });
+        
+        scene.add(model);
+        
+        // Запуск анимации если есть
+        if (gltf.animations && gltf.animations.length > 0) {
+          mixer = new THREE.AnimationMixer(model);
+          const action = mixer.clipAction(gltf.animations[0]);
+          action.play();
+        }
+        
+        isModelLoaded = true;
+        console.log('✅ 3D модель успешно загружена');
+      }, 
+      undefined, 
+      (error) => {
+        console.error('❌ Ошибка загрузки модели:', error);
+        // Создаем простую геометрию как запасной вариант
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshBasicMaterial({ 
+          color: 0x64baff,
+          transparent: true,
+          opacity: 0.8
+        });
+        model = new THREE.Mesh(geometry, material);
+        scene.add(model);
+        isModelLoaded = true;
+      }
+    );
+
+    const clock = new THREE.Clock();
+    
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      const delta = clock.getDelta();
+      
+      // Обновляем анимацию если есть
+      if (mixer) {
+        mixer.update(delta);
+      }
+      
+      // Легкое вращение модели для живой анимации
+      if (model && isModelLoaded) {
+        model.rotation.y += delta * 0.1; // Медленное вращение
+      }
+      
+      renderer.render(scene, camera);
+    }
+    
+    // Запускаем анимацию сразу
+    animate();
+
+    // Обработка изменения размера окна
+    window.addEventListener('resize', () => {
+      setSize();
+    });
+
+    // ✋ Реакция на слово "привет" и другие приветствия
+    window.addEventListener('ai_phrase', (e) => {
+      const text = e.detail?.toLowerCase?.() || '';
+      // Поддержка русского, казахского и английского приветствий
+      if (text.includes('привет') || text.includes('сәлем') || text.includes('hello') || text.includes('hi')) {
+        pulse();
+      }
+    });
+
+    // Эффект лёгкого подсвечивания
+    function pulse() {
+      if (!model || !isModelLoaded) return;
+      
+      model.traverse((obj) => {
+        if (obj.isMesh) {
+          const m = obj.material;
+          if (!m.emissive) m.emissive = new THREE.Color(0x00ffff);
+          m.emissiveIntensity = 1;
+          
+          // Плавное исчезновение свечения
+          let intensity = 1;
+          const fadeOut = () => {
+            intensity -= 0.05;
+            m.emissiveIntensity = intensity;
+            
+            if (intensity > 0) {
+              requestAnimationFrame(fadeOut);
+            }
+          };
+          
+          setTimeout(() => {
+            fadeOut();
+          }, 300);
+        }
+      });
+    }
+
+    // Гарантируем, что рендерер продолжает работать
+    setInterval(() => {
+      if (isModelLoaded) {
+        renderer.render(scene, camera);
+      }
+    }, 1000 / 30); // 30 FPS как резерв
+  </script>
+
+  <style>
+    #robot-container {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 180px;
+      height: 180px;
+      z-index: 9999;
+      pointer-events: none; /* чтобы не мешал кликам на сайт */
+    }
+    #robot-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    
+    @media (max-width: 768px) {
+      #robot-container {
+        width: 140px;
+        height: 140px;
+        right: 15px;
+        bottom: 15px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      #robot-container {
+        width: 120px;
+        height: 120px;
+        right: 10px;
+        bottom: 10px;
+      }
+    }
+  </style>
+  <!-- ===== ROBOT ASSISTANT END ===== -->
+
+  <script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('userInput');
+    const btn = document.getElementById('sendBtn');
+    const quickBtns = document.getElementById('quickBtns');
+    const topThemeToggle = document.getElementById('topThemeToggle');
+    const topLangSelect = document.getElementById('topLangSelect');
+    const backBtn = document.getElementById('backBtn');
+    const assistant = document.querySelector('.assistant');
+    const aiDescription = document.getElementById('aiDescription');
+    const aboutSection = document.getElementById('aboutSection');
+
+    let currentTheme = 'light';
+    let currentLang = 'ru';
+    let currentSpeech = null;
+    let currentSpeakingIcon = null;
+    let isExpanded = false;
+
+    function expandAssistant() {
+      if (!isExpanded) {
+        assistant.classList.remove('collapsed');
+        document.body.classList.add('expanded');
+        isExpanded = true;
+
+        setTimeout(() => {
+          if (chat.children.length === 0) {
+            addMessage(translations[currentLang].greeting, 'bot');
+          }
+        }, 300);
+      }
+    }
+
+    function collapseAssistant() {
+      if (isExpanded) {
+        assistant.classList.add('collapsed');
+        document.body.classList.remove('expanded');
+        isExpanded = false;
+
+        setTimeout(() => {
+          chat.innerHTML = '';
+          input.value = '';
+          stopSpeaking();
+        }, 500);
+      }
+    }
+
+    assistant.addEventListener('click', (e) => {
+      if (!isExpanded && !e.target.closest('input')) {
+        expandAssistant();
+        setTimeout(() => input.focus(), 500);
+      }
+    });
+
+    input.addEventListener('focus', () => {
+      if (!isExpanded) {
+        expandAssistant();
+      }
+    });
+
+    backBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      collapseAssistant();
+    });
+
+    const faqDatabase = {
+      ru: [
+        {
+          keywords: ['час', 'работ', 'время', 'график', 'когда открыт', 'расписание работы', 'режим'],
+          answer: '🕒 Дворец школьников «Digital Urpaq» работает с понедельника по субботу с 09:00 до 19:00, воскресенье — выходной. Перерыв — с 13:00 до 14:00.'
+        },
+        {
+          keywords: ['адрес', 'где находится', 'местоположение', 'как найти', 'расположен'],
+          answer: '📍 Адрес Дворца: ул. Таштинова, Петропавловск'
+        },
+        {
+          keywords: ['запис', 'регистр', 'как записаться', 'поступ', 'вступ', 'зачисл'],
+          answer: '📝 Записаться можно через сайт digitalurpaq.edu.kz → раздел «Запись в кружки», либо лично в центре, обратившись к администрации.'
+        },
+        {
+          keywords: ['круж', 'секц', 'занят', 'курс', 'какие кружки', 'направления', 'что есть'],
+          answer: '🎨 В Дворце работают кружки по направлениям:\n• IT и робототехника\n• Биология и химия\n• Художественно-эстетическое творчество\n• Экология и устойчивое развитие\n• 3D-моделирование\n• Дроны и электроника'
+        },
+        {
+          keywords: ['бесплатн', 'платн', 'стоимость', 'цена', 'сколько стоит', 'оплата', 'деньги'],
+          answer: '💸 Большинство кружков бесплатные, финансируются государством. Платные направления — это дополнительные курсы по IT и дизайну.'
+        },
+        {
+          keywords: ['направлен', 'специальност', 'профил', 'области'],
+          answer: '🧪 Направления кружков:\n• Научно-биологическое и химическое\n• Техническое (IT, робототехника, программирование)\n• Художественно-эстетическое (рисование, музыка, творчество)\n• Гуманитарное (история, краеведение, языки)'
+        },
+        {
+          keywords: ['преподават', 'учител', 'педагог', 'кто ведет', 'кто преподает', 'кто учит'],
+          answer: '👩‍🏫 Преподаватели:\n• Сарсембаева А.О. — химия\n• Тайжанова Б.Ж. — биология\n• Женушилова А.К. — химия\n• Лысяков В.В. — дроны и электроника\n• Малкошева Ж.И. — программирование и Python'
+        },
+        {
+          keywords: ['контакт', 'телефон', 'email', 'связ', 'позвонить', 'написать'],
+          answer: '📞 Контактная информация:\nТелефон: +7 (7172) 70-55-11\nE-mail: info@digitalurpaq.edu.kz'
+        },
+        {
+          keywords: ['лаборатор', 'кабинет', 'оборудован', 'помещен', 'классы'],
+          answer: '🔬 Лаборатории: биотехнологий, 3D-прототипирования, робототехники, IT-программирования и электроники.'
+        },
+        {
+          keywords: ['мероприят', 'событ', 'афиш', 'план', 'что будет', 'календарь'],
+          answer: '📅 Расписание и афиша мероприятий размещены в разделах «Новости» и «Мероприятия» на сайте digitalurpaq.edu.kz'
+        },
+        {
+          keywords: ['тур', '3d', 'виртуальн', 'экскурс', 'посмотреть здание'],
+          answer: '🌐 Да, доступен виртуальный 3D-тур по зданию Дворца школьников в разделе «3D-тур» на сайте.'
+        },
+        {
+          keywords: ['возраст', 'лет', 'сколько лет', 'возрастн', 'со скольки'],
+          answer: '👧🧒 В кружки принимаются дети от 5 до 18 лет.'
+        },
+        {
+          keywords: ['перерыв', 'обед', 'перерыв на обед', 'обеденный'],
+          answer: '🍽 Перерыв — с 13:00 до 14:00, у некоторых кружков может быть другое время занятий.'
+        },
+        {
+          keywords: ['добраться', 'транспорт', 'автобус', 'маршрут', 'как доехать', 'проезд'],
+          answer: '🚌 До остановки «Дворец школьников» ходят автобусы: № 10, 29, 37, 40, 70, 84.'
+        },
+        {
+          keywords: ['художествен', 'рисован', 'живопись', 'искусств', 'творчество', 'дизайн'],
+          answer: '🎨 Да, есть художественно-эстетическое направление: живопись, графика, дизайн, декоративно-прикладное искусство.'
+        },
+        {
+          keywords: ['директор', 'руководител', 'кто директор', 'начальник'],
+          answer: '👩‍💼 Директор Дворца — Сауле Сергазиновна Есиркепова.'
+        },
+        {
+          keywords: ['преимущество', 'почему', 'зачем', 'что хорошего', 'плюс', 'выгода'],
+          answer: '🏫 Преимущества Дворца:\n• Современная инфраструктура\n• Лаборатории и IT-оборудование\n• Квалифицированные педагоги\n• Бесплатное обучение\n• Инновационные кружки'
+        },
+        {
+          keywords: ['перейти', 'перевод', 'смен', 'другой кружок', 'поменять'],
+          answer: '🔁 Чтобы перейти в другой кружок, обратитесь к методисту центра или в администрацию для оформления перевода.'
+        },
+        {
+          keywords: ['справк', 'документ', 'получить справку', 'бумаги'],
+          answer: '📄 Для получения справок обратитесь в администрацию Дворца с удостоверением личности и заявлением от родителя.'
+        },
+        {
+          keywords: ['программирован', 'python', 'код', 'it', 'робот', 'компьютер'],
+          answer: '💻 У нас есть кружки по программированию, Python, робототехнике и 3D-моделированию. Преподаватель — Малкошева Ж.И.'
+        }
+      ],
+      kk: [
+        {
+          keywords: ['сағат', 'жұмыс', 'уақыт', 'график', 'қашан ашық', 'кесте'],
+          answer: '🕒 «Digital Urpaq» мектеп сарайы дүйсенбіден сенбіге дейін 09:00-ден 19:00-ге дейін жұмыс істейді, жексенбі — демалыс. Түскі үзіліс — 13:00-ден 14:00-ге дейін.'
+        },
+        {
+          keywords: ['мекенжай', 'қайда', 'орналасқан', 'табу'],
+          answer: '📍 Сарай мекенжайы: Таштинов көшесі, Петропавл'
+        },
+        {
+          keywords: ['жазыл', 'тіркел', 'қалай жазылу', 'түсу', 'қабылдау'],
+          answer: '📝 digitalurpaq.edu.kz сайты арқылы «Үйірмелерге жазылу» бөліміне өтіп немесе әкімшілікке жүгініп жазылуға болады.'
+        },
+        {
+          keywords: ['үйірме', 'секция', 'сабақ', 'курс', 'қандай үйірмелер', 'бағыттар'],
+          answer: '🎨 Сарайда мына бағыттар бойынша үйірмелер жұмыс істейді:\n• IT және робототехника\n• Биология және химия\n• Көркем-эстетикалық шығармашылық\n• Экология және тұрақты даму\n• 3D модельдеу\n• Дрондар және электроника'
+        },
+        {
+          keywords: ['тегін', 'ақылы', 'құн', 'баға', 'қанша тұрады', 'төлем'],
+          answer: '💸 Үйірмелердің көпшілігі тегін, мемлекет қаржыландырады. Ақылы бағыттар — IT және дизайн бойынша қосымша курстар.'
+        },
+        {
+          keywords: ['бағыт', 'мамандық', 'профиль', 'салалар'],
+          answer: '🧪 Үйірмелердің бағыттары:\n• Ғылыми-биологиялық және химиялық\n• Техникалық (IT, робототехника, бағдарламалау)\n• Көркем-эстетикалық (сурет, музыка, шығармашылық)\n• Гуманитарлық (тарих, өлкетану, тілдер)'
+        },
+        {
+          keywords: ['оқытушы', 'мұғалім', 'педагог', 'кім жүргізеді', 'кім оқытады'],
+          answer: '👩‍🏫 Оқытушылар:\n• Сарсембаева А.О. — химия\n• Тайжанова Б.Ж. — биология\n• Женушилова А.К. — химия\n• Лысяков В.В. — дрондар және электроника\n• Малкошева Ж.И. — бағдарламалау және Python'
+        },
+        {
+          keywords: ['байланыс', 'телефон', 'email', 'хабарласу', 'қоңырау'],
+          answer: '📞 Байланыс ақпараты:\nТелефон: +7 (7172) 70-55-11\nE-mail: info@digitalurpaq.edu.kz'
+        },
+        {
+          keywords: ['зертхана', 'кабинет', 'жабдық', 'бөлме'],
+          answer: '🔬 Зертханалар: биотехнология, 3D прототиптеу, робототехника, IT-бағдарламалау және электроника.'
+        },
+        {
+          keywords: ['шара', 'оқиға', 'афиша', 'жоспар', 'не болады'],
+          answer: '📅 Іс-шаралар кестесі мен афишасы сайттың «Жаңалықтар» және «Іс-шаралар» бөлімдерінде орналастырылған.'
+        },
+        {
+          keywords: ['тур', '3d', 'виртуалды', 'экскурсия', 'ғимаратты көру'],
+          answer: '🌐 Иә, сайтта «3D-тур» бөлімінде мектеп сарайының виртуалды 3D-туры қолжетімді.'
+        },
+        {
+          keywords: ['жас', 'неше жаста', 'жас шегі'],
+          answer: '👧🧒 Үйірмелерге 5-тен 18 жасқа дейінгі балалар қабылданады.'
+        },
+        {
+          keywords: ['үзіліс', 'түскі ас', 'түскі үзіліс'],
+          answer: '🍽 Түскі үзіліс — 13:00-ден 14:00-ге дейін, кейбір үйірмелерде басқа сабақ уақыты болуы мүмкін.'
+        },
+        {
+          keywords: ['жету', 'көлік', 'автобус', 'маршрут', 'қалай жетуге'],
+          answer: '🚌 «Мектеп сарайы» аялдамасына № 10, 29, 37, 40, 70, 84 автобустары жүреді.'
+        },
+        {
+          keywords: ['көркем', 'сурет', 'өнер', 'шығармашылық', 'дизайн'],
+          answer: '🎨 Иә, көркем-эстетикалық бағыт бар: кескіндеме, графика, дизайн, қолданбалы өнер.'
+        },
+        {
+          keywords: ['директор', 'басшы', 'кім директор'],
+          answer: '👩‍💼 Сарай директоры — Сауле Сергазиновна Есіркепова.'
+        },
+        {
+          keywords: ['артықшылық', 'неге', 'не үшін', 'жақсы жағы', 'пайда'],
+          answer: '🏫 Сарайдың артықшылықтары:\n• Заманауи инфрақұрылым\n• Зертханалар және IT-жабдық\n• Білікті педагогтар\n• Тегін оқыту\n• Инновациялық үйірмелер'
+        },
+        {
+          keywords: ['ауысу', 'аудару', 'өзгерту', 'басқа үйірме', 'ауыстыру'],
+          answer: '🔁 Басқа үйірмеге ауысу үшін орталықтың әдіскеріне немесе әкімшілікке жүгініңіз.'
+        },
+        {
+          keywords: ['анықтама', 'құжат', 'алу', 'қағаз'],
+          answer: '📄 Анықтама алу үшін жеке куәлік және ата-ананың өтінішімен әкімшілікке жүгініңіз.'
+        },
+        {
+          keywords: ['бағдарламалау', 'python', 'код', 'it', 'робот', 'компьютер'],
+          answer: '💻 Бізде бағдарламалау, Python, робототехника және 3D модельдеу бойынша үйірмелер бар. Оқытушы — Малкошева Ж.И.'
+        }
+      ],
+      en: [
+        {
+          keywords: ['hour', 'work', 'time', 'schedule', 'when open', 'opening'],
+          answer: '🕒 Digital Urpaq Palace works Monday to Saturday from 09:00 to 19:00, Sunday is closed. Lunch break — 13:00 to 14:00.'
+        },
+        {
+          keywords: ['address', 'where', 'location', 'find', 'located'],
+          answer: '📍 Address: Tashtinov Street, Petropavlovsk'
+        },
+        {
+          keywords: ['enroll', 'register', 'sign up', 'join', 'how to register', 'admission'],
+          answer: '📝 You can register through the website digitalurpaq.edu.kz → "Club Registration" section, or in person at the center by contacting administration.'
+        },
+        {
+          keywords: ['club', 'section', 'class', 'course', 'what clubs', 'activities', 'programs'],
+          answer: '🎨 The Palace offers clubs in:\n• IT and Robotics\n• Biology and Chemistry\n• Artistic and Aesthetic Creativity\n• Ecology and Sustainable Development\n• 3D Modeling\n• Drones and Electronics'
+        },
+        {
+          keywords: ['free', 'paid', 'cost', 'price', 'how much', 'payment', 'money'],
+          answer: '💸 Most clubs are free, funded by the government. Paid programs are additional IT and design courses.'
+        },
+        {
+          keywords: ['direction', 'specialty', 'profile', 'field', 'area'],
+          answer: '🧪 Club directions:\n• Scientific-Biological and Chemical\n• Technical (IT, Robotics, Programming)\n• Artistic-Aesthetic (Drawing, Music, Creativity)\n• Humanities (History, Local Studies, Languages)'
+        },
+        {
+          keywords: ['teacher', 'instructor', 'educator', 'who teaches', 'staff'],
+          answer: '👩‍🏫 Teachers:\n• Sarsembayeva A.O. — Chemistry\n• Tayzhanova B.Zh. — Biology\n• Zhenushilova A.K. — Chemistry\n• Lyasyakov V.V. — Drones and Electronics\n• Malkosheva Zh.I. — Programming and Python'
+        },
+        {
+          keywords: ['contact', 'phone', 'email', 'call', 'reach', 'write'],
+          answer: '📞 Contact information:\nPhone: +7 (7172) 70-55-11\nE-mail: info@digitalurpaq.edu.kz'
+        },
+        {
+          keywords: ['laboratory', 'lab', 'room', 'equipment', 'facility', 'classroom'],
+          answer: '🔬 Laboratories: biotechnology, 3D prototyping, robotics, IT programming and electronics.'
+        },
+        {
+          keywords: ['event', 'activity', 'schedule', 'plan', 'what happening', 'calendar'],
+          answer: '📅 Event schedule and announcements are posted in the "News" and "Events" sections on the website.'
+        },
+        {
+          keywords: ['tour', '3d', 'virtual', 'excursion', 'see building'],
+          answer: '🌐 Yes, a virtual 3D tour of the Palace building is available in the "3D Tour" section on the website.'
+        },
+        {
+          keywords: ['age', 'years old', 'how old', 'age limit'],
+          answer: '👧🧒 Children aged 5 to 18 years are accepted into clubs.'
+        },
+        {
+          keywords: ['break', 'lunch', 'lunch break', 'meal'],
+          answer: '🍽 Lunch break — 13:00 to 14:00, some clubs may have different class times.'
+        },
+        {
+          keywords: ['get there', 'transport', 'bus', 'route', 'how to reach', 'travel'],
+          answer: '🚌 Buses to "Palace of Schoolchildren" stop: № 10, 29, 37, 40, 70, 84.'
+        },
+        {
+          keywords: ['art', 'drawing', 'painting', 'artistic', 'creative', 'design'],
+          answer: '🎨 Yes, there is an artistic-aesthetic direction: painting, graphics, design, decorative and applied arts.'
+        },
+        {
+          keywords: ['director', 'head', 'who director', 'principal'],
+          answer: '👩‍💼 Director of the Palace — Saule Sergazinovna Yesirkepova.'
+        },
+        {
+          keywords: ['advantage', 'benefit', 'why', 'good', 'plus', 'benefit'],
+          answer: '🏫 Palace advantages:\n• Modern infrastructure\n• Laboratories and IT equipment\n• Qualified teachers\n• Free education\n• Innovative clubs'
+        },
+        {
+          keywords: ['transfer', 'change', 'switch', 'another club', 'move'],
+          answer: '🔁 To transfer to another club, contact the center methodologist or administration to process the transfer.'
+        },
+        {
+          keywords: ['certificate', 'document', 'get certificate', 'paper'],
+          answer: '📄 To get certificates, contact the Palace administration with ID and a parent\'s application.'
+        },
+        {
+          keywords: ['programming', 'python', 'code', 'it', 'robot', 'computer'],
+          answer: '💻 We have clubs in programming, Python, robotics and 3D modeling. Teacher — Malkosheva Zh.I.'
+        }
+      ]
+    };
+
+    const translations = {
+      ru: {
+        greeting: '👋 Здравствуйте! Я ваш AI-помощник Digital Urpaq. Задайте мне любой вопрос о Дворце школьников!',
+        placeholder: 'Спросите что-нибудь...',
+        send: 'Отправить',
+        fallback: 'Извините, я не нашёл точного ответа на ваш вопрос. Попробуйте переформулировать или свяжитесь с нами по телефону +7 (7172) 70-55-11 📞',
+        quickButtons: ['Кружки', 'Преподаватели', 'Часы работы', 'Как записаться'],
+        back: '← Назад',
+        aiTitle: '🤖 AI-Помощник',
+        aiDescription: 'Здесь ответят на все вопросы. <span class="highlight">Спросите!</span>',
+        aboutTitle: 'О нашем Дворце школьников',
+        aboutText: 'Дворец школьников занимает авангардную позицию в развитии новых, наиболее востребованных направлений ІТ-технологий. Приоритетным направлением является развитие проектно-исследовательской деятельности и научно-технического творчества, соответствующее наиболее перспективным направлениям развития современной науки и техники. На базе Дворца школьников будет функционировать IT-центр, который станет местом интеллектуального развития и досуга детей и молодежи.'
+      },
+      kk: {
+        greeting: '👋 Сәлеметсіз бе! Мен сіздің Digital Urpaq AI көмекшіңізмін. Мектеп сарайы туралы кез келген сұрақ қойыңыз!',
+        placeholder: 'Сұрағыңызды жазыңыз...',
+        send: 'Жіберу',
+        fallback: 'Кешіріңіз, сұрағыңызға дәл жауап таба алмадым. Басқаша тұжырымдап көріңіз немесе +7 (7172) 70-55-11 телефоны арқылы хабарласыңыз 📞',
+        quickButtons: ['Үйірмелер', 'Оқытушылар', 'Жұмыс уақыты', 'Қалай жазылу'],
+        back: '← Артқа',
+        aiTitle: '🤖 AI-Көмекші',
+        aiDescription: 'Мұнда барлық сұрақтарға жауап береді. <span class="highlight">Сұраңыз!</span>',
+        aboutTitle: 'Біздің мектеп сарайы туралы',
+        aboutText: 'Мектеп сарайы жаңа, ең сұранысқа ие ІТ-технологиялар бағыттарын дамытуда алдыңғы қатарда тұр. Басым бағыт - қазіргі заманғы ғылым мен техниканың ең перспективалы бағыттарына сәйкес келетін жобалық-зерттеу қызметі мен ғылыми-техникалық шығармашылықты дамыту болып табылады. Мектеп сарайының базасында балалар мен жастардың интеллектуалдық дамуы мен бос уақытын өткізу орны болатын IT-орталық жұмыс істейді.'
+      },
+      en: {
+        greeting: '👋 Hello! I\'m your Digital Urpaq AI assistant. Ask me anything about the Palace of Schoolchildren!',
+        placeholder: 'Ask something...',
+        send: 'Send',
+        fallback: 'Sorry, I couldn\'t find an exact answer to your question. Try rephrasing or contact us at +7 (7172) 70-55-11 📞',
+        quickButtons: ['Clubs', 'Teachers', 'Working Hours', 'How to Enroll'],
+        back: '← Back',
+        aiTitle: '🤖 AI Assistant',
+        aiDescription: 'Here you will get answers to all questions. <span class="highlight">Ask!</span>',
+        aboutTitle: 'About Our Palace of Schoolchildren',
+        aboutText: 'The Palace of Schoolchildren occupies a leading position in the development of new, most demanded areas of IT technologies. The priority direction is the development of project-research activities and scientific-technical creativity, corresponding to the most promising directions of modern science and technology development. An IT center will operate on the basis of the Palace of Schoolchildren, which will become a place of intellectual development and leisure for children and youth.'
+      }
+    };
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', currentTheme);
+      const icon = currentTheme === 'dark' ? '🌙' : '☀️';
+      const title = currentTheme === 'dark' ? 'Переключить на светлую тему' : 'Переключить на тёмную тему';
+      topThemeToggle.textContent = icon;
+      topThemeToggle.title = title;
+    }
+
+    function stopSpeaking() {
+      if (currentSpeech) {
+        speechSynthesis.cancel();
+        if (currentSpeakingIcon) {
+          currentSpeakingIcon.classList.remove('speaking');
+        }
+        currentSpeech = null;
+        currentSpeakingIcon = null;
+      }
+    }
+
+    function speakText(text, iconElement) {
+      const cleanText = text.replace(/<[^>]*>/g, ' ').replace(/[•\n]/g, ' ').replace(/\s+/g, ' ').trim();
+
+      if (currentSpeech && currentSpeakingIcon === iconElement) {
+        stopSpeaking();
+        return;
+      }
+
+      stopSpeaking();
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = currentLang === 'kk' ? 'ru-RU' : currentLang === 'ru' ? 'ru-RU' : 'en-US';
+      utterance.rate = 0.95;
+      utterance.pitch = 0.9;
+      utterance.volume = 1;
+
+      const voices = speechSynthesis.getVoices();
+      const voicePreferences = {
+        'ru': ['Google русский', 'Microsoft Pavel', 'Yuri', 'Russian'],
+        'kk': ['Russian', 'Google русский'],
+        'en': ['Google US English', 'Microsoft David', 'Alex']
+      };
+
+      const preferences = voicePreferences[currentLang] || voicePreferences['en'];
+      for (const pref of preferences) {
+        const voice = voices.find(v => v.name.includes(pref) || v.lang.includes(pref));
+        if (voice) {
+          utterance.voice = voice;
+          break;
+        }
+      }
+
+      if (iconElement) {
+        iconElement.classList.add('speaking');
+        currentSpeakingIcon = iconElement;
+      }
+
+      utterance.onend = () => {
+        if (iconElement) iconElement.classList.remove('speaking');
+        currentSpeech = null;
+        currentSpeakingIcon = null;
+      };
+
+      utterance.onerror = () => {
+        if (iconElement) iconElement.classList.remove('speaking');
+        currentSpeech = null;
+        currentSpeakingIcon = null;
+      };
+
+      currentSpeech = utterance;
+      speechSynthesis.speak(utterance);
+    }
+
+    function updateLanguage(lang) {
+      currentLang = lang;
+      input.placeholder = translations[lang].placeholder;
+      btn.textContent = translations[lang].send;
+      backBtn.innerHTML = translations[lang].back;
+
+      aiDescription.querySelector('h2').textContent = translations[lang].aiTitle;
+      aiDescription.querySelector('p').innerHTML = translations[lang].aiDescription;
+
+      aboutSection.querySelector('h2').textContent = translations[lang].aboutTitle;
+      aboutSection.querySelector('p').textContent = translations[lang].aboutText;
+
+      quickBtns.innerHTML = '';
+      translations[lang].quickButtons.forEach(text => {
+        const b = document.createElement('button');
+        b.className = 'circle-btn';
+        b.textContent = text;
+        b.onclick = () => handleSend(text);
+        quickBtns.appendChild(b);
+      });
+
+      if (isExpanded && chat.children.length > 0) {
+        chat.innerHTML = '';
+        addMessage(translations[lang].greeting, 'bot');
+      }
+    }
+
+    function addMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = 'msg ' + sender;
+      msg.innerHTML = text;
+
+      if (sender === 'bot') {
+        const speaker = document.createElement('span');
+        speaker.className = 'speaker-icon';
+        speaker.textContent = '🔊';
+        speaker.title = 'Озвучить';
+        speaker.onclick = () => speakText(text, speaker);
+        msg.appendChild(speaker);
+      }
+
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function findAnswer(question) {
+      const q = question.toLowerCase();
+      const faqs = faqDatabase[currentLang];
+
+      let bestMatch = { score: 0, answer: '' };
+
+      for (const faq of faqs) {
+        let score = 0;
+        for (const keyword of faq.keywords) {
+          if (q.includes(keyword.toLowerCase())) {
+            score += keyword.length;
+          }
+        }
+        if (score > bestMatch.score) {
+          bestMatch = { score, answer: faq.answer };
+        }
+      }
+
+      return bestMatch.score > 0 ? bestMatch.answer : translations[currentLang].fallback;
+    }
+
+    function handleSend(text = null) {
+      if (!isExpanded) {
+        expandAssistant();
+      }
+
+      const userText = text || input.value.trim();
+      if (!userText) return;
+
+      addMessage(userText, 'user');
+      input.value = '';
+
+      // Отправляем событие для робота-ассистента
+      window.dispatchEvent(new CustomEvent('ai_phrase', { detail: userText }));
+
+      setTimeout(() => {
+        const answer = findAnswer(userText);
+        addMessage(answer, 'bot');
+        speakText(answer, chat.lastChild.querySelector('.speaker-icon'));
+      }, 400);
+    }
+
+    topThemeToggle.onclick = () => {
+      toggleTheme();
+    };
+
+    topLangSelect.onchange = () => {
+      const selectedLang = topLangSelect.value;
+      updateLanguage(selectedLang);
+    };
+
+    btn.onclick = () => handleSend();
+
+    input.onkeydown = e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSend();
+      }
+    };
+
+    // Initialize the assistant
+    window.onload = () => {
+      updateLanguage('ru');
+      speechSynthesis.getVoices();
+    };
+
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+    }
+  </script>
+</body>
+</html>
